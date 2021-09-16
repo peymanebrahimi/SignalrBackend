@@ -46,14 +46,19 @@ namespace ChatApp
             }
             app.UseCors(builder =>
             {
-                builder.WithOrigins(Configuration.GetSection("SignalrOrigins").Value)
+                var clients = Configuration.GetSection("SignalrOrigins")
+                    .GetChildren()
+                    .Select(x => x.Value)
+                    .ToArray();
+
+                builder.WithOrigins(clients)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
             });
 
             app.UseRouting();
-           
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
