@@ -1,16 +1,19 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using ChatApp.Data;
+using ChatApp.Hubs;
+using ChatApp.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using ChatApp.Hubs;
 
 namespace ChatApp
 {
@@ -26,13 +29,50 @@ namespace ChatApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChatApp", Version = "v1" });
             });
             services.AddSignalR();
+
+            
+            //JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // IdentityServer with an additional AddApiAuthorization helper method that
+            // sets up some default ASP.NET Core conventions on top of IdentityServer
+            services.AddIdentityServer(o =>
+                {
+
+                })
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(o =>
+                {
+
+                });
+
+            // Authentication with an additional AddIdentityServerJwt helper method that
+            // configures the app to validate JWT tokens produced by IdentityServer
+            services.AddAuthentication(o =>
+                {
+
+                })
+                .AddIdentityServerJwt();
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>,
+                    ConfigureJwtBearerOptions>());
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,12 +97,19 @@ namespace ChatApp
                     .AllowCredentials();
             });
 
+            app.ConfigureExceptionHandler();
+
+            app.UseStaticFiles();
+
             app.UseRouting();
 
+            app.UseIdentityServer();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/ChatHub");
             });
