@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace ChatApp
 {
@@ -98,6 +99,12 @@ namespace ChatApp
             });
 
             app.ConfigureExceptionHandler();
+
+            // to chrome and adge function properly on login redirect.
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Lax
+            });
 
             app.UseStaticFiles();
 
