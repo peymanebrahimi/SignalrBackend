@@ -1,11 +1,13 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using ChatApp.Data;
+﻿using ChatApp.Data;
+using ChatApp.Data.Expense;
 using ChatApp.Hubs;
 using ChatApp.Models;
+using ChatApp.Models.Expense;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +15,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 
 namespace ChatApp
 {
@@ -36,8 +39,18 @@ namespace ChatApp
             });
             services.AddSignalR();
 
-            
-            //JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            #region Mongodb
+
+            ConventionRegistry.Register("Camel Case",
+                new ConventionPack { new CamelCaseElementNameConvention() }, _ => true);
+
+            var mongodbCn = Configuration["ConnectionStrings:Mongodb"];
+
+            services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongodbCn));
+
+            services.AddTransient<IRepository<Received>, ExpenseRepository>();
+            #endregion
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
@@ -73,7 +86,7 @@ namespace ChatApp
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
