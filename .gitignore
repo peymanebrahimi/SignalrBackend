@@ -363,5 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 appsettings.json
+appsettings*.json
 
+*.pfx
 
+.env
