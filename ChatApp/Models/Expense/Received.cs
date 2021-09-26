@@ -1,10 +1,11 @@
-﻿using MongoDB.Bson;
+﻿using ChatApp.Data.Expense;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 
 namespace ChatApp.Models.Expense
 {
-    public class Received
+    public class Received:IHaveId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -20,7 +21,7 @@ namespace ChatApp.Models.Expense
         public Cheque Cheque { get; set; }
     }
 
-    public class Client
+    public class Client:IHaveId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -31,7 +32,7 @@ namespace ChatApp.Models.Expense
 
     }
 
-    public class Parvandeh
+    public class Parvandeh:IHaveId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -41,7 +42,7 @@ namespace ChatApp.Models.Expense
         public string Baygani { get; set; }
     }
 
-    public class Cheque
+    public class Cheque:IHaveId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

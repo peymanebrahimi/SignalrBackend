@@ -49,7 +49,7 @@ namespace ChatApp
 
             services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongodbCn));
 
-            services.AddTransient<IRepository<Received>, ExpenseRepository>();
+            services.AddTransient<IRepository<Received>, Repository<Received>>();
             #endregion
 
             services.AddDbContext<ApplicationDbContext>(options =>
