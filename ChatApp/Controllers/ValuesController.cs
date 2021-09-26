@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using ChatApp.Data.Expense;
 using ChatApp.Models.Expense;
+using Microsoft.Extensions.Configuration;
 
 namespace ChatApp.Controllers
 {
@@ -17,11 +18,17 @@ namespace ChatApp.Controllers
         private readonly IRepository<Client> _clientRepository;
         private readonly IRepository<Parvandeh> _parvandehRepository;
 
-        public ValuesController(IRepository<Received> receiveRepository, IRepository<Client> clientRepository, IRepository<Parvandeh> parvandehRepository)
+        public IConfiguration Configuration { get; }
+
+        public ValuesController(IRepository<Received> receiveRepository, 
+            IRepository<Client> clientRepository, 
+            IRepository<Parvandeh> parvandehRepository,
+            IConfiguration configuration)
         {
             _receiveRepository = receiveRepository;
             _clientRepository = clientRepository;
             _parvandehRepository = parvandehRepository;
+            Configuration = configuration;
         }
 
         // GET: api/<ValuesController>
@@ -36,7 +43,8 @@ namespace ChatApp.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            return "value";
+            var mongodbCn = Configuration.GetValue<string>("MONGODB_CN");
+            return mongodbCn;
         }
 
         // POST api/<ValuesController>

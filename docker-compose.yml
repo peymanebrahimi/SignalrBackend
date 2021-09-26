@@ -13,6 +13,7 @@ services:
     restart: always
     environment:
       - MONGODB_CN
+      - Sql_CN
     networks:
      - signalr-app-network
     depends_on:
@@ -27,6 +28,9 @@ services:
     volumes:
       - "mongovol:/data/db"
     restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${Mongodb_User}"
+      MONGO_INITDB_ROOT_PASSWORD: "${Mongodb_Pw}"
     networks:
       - signalr-app-network
 

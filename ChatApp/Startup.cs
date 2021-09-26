@@ -50,6 +50,9 @@ namespace ChatApp
             services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongodbCn));
 
             services.AddTransient<IRepository<Received>, Repository<Received>>();
+            services.AddTransient<IRepository<Client>, Repository<Client>>();
+            services.AddTransient<IRepository<Parvandeh>, Repository<Parvandeh>>();
+
             #endregion
 
             var sqlCn = Configuration.GetValue<string>("Sql_CN");
