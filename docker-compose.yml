@@ -3,18 +3,21 @@ version: '3.4'
 services:
   chatapp:
     image: ${DOCKER_REGISTRY-}chatapp
+    container_name: chatapp
     build:
       context: .
       dockerfile: ChatApp/Dockerfile
+    ports:
+      - "8080:80"
+      - "8081:443"
+    restart: always
     environment:
       - MONGODB_CN
-    restart: always
     networks:
      - signalr-app-network
     depends_on:
       - mongo
       - sqldb
-      
 
   mongo:
     image: mongo
@@ -24,26 +27,22 @@ services:
     volumes:
       - "mongovol:/data/db"
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
     networks:
-      - webapplication1-network
-
+      - signalr-app-network
 
   sqldb:
     image: mcr.microsoft.com/mssql/server
-    volumes:
-      - sqlvolume:/var/opt/mssql
-    environment:
-      SA_PASSWORD: "${DB_PW}"
-      ACCEPT_EULA: "Y"
+    container_name: sqldb
     ports:
       - "1402:1433"
+    volumes:
+      - sqlvolume:/var/opt/mssql
     restart: always
+    environment:
+      SA_PASSWORD: "${SqlDb_Pw}"
+      ACCEPT_EULA: "Y"
     networks:
      - signalr-app-network
-
 
 networks:
   signalr-app-network:
@@ -51,3 +50,4 @@ networks:
 
 volumes:
   mongovol:
+  sqlvolume:

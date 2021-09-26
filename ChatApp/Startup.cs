@@ -45,16 +45,17 @@ namespace ChatApp
             ConventionRegistry.Register("Camel Case",
                 new ConventionPack { new CamelCaseElementNameConvention() }, _ => true);
 
-            var mongodbCn = Configuration["ConnectionStrings:Mongodb"];
+            var mongodbCn = Configuration.GetValue<string>("MONGODB_CN");
 
             services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongodbCn));
 
             services.AddTransient<IRepository<Received>, Repository<Received>>();
             #endregion
 
+            var sqlCn = Configuration.GetValue<string>("Sql_CN");
+
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(sqlCn));
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
