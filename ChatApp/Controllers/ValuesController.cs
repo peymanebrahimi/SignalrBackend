@@ -1,12 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MongoDB.Bson;
 using ChatApp.Data.Expense;
 using ChatApp.Models.Expense;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
+using System.Threading.Tasks;
 
 namespace ChatApp.Controllers
 {

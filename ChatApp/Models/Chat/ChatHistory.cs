@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ChatApp.Models
+namespace ChatApp.Models.Chat
 {
     public class ChatHistory
     {

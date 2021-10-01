@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using ChatApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Retry;
 
 namespace ChatApp
 {
@@ -20,11 +22,19 @@ namespace ChatApp
 
             var host = CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope())
+
+            RetryPolicy retryIfException =
+                Policy.Handle<Exception>()
+                    .WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(
+                    Math.Pow(2, retryAttempt)));
+
+            retryIfException.Execute(() =>
             {
+                using var scope = host.Services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 db.Database.Migrate();
-            }
+            });
+
 
             host.Run();
         }

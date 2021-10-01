@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ChatApp.Models.Chat;
 using Microsoft.AspNetCore.Http;
 
 namespace ChatApp.Hubs

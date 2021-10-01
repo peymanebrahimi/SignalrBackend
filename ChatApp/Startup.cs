@@ -53,6 +53,10 @@ namespace ChatApp
             services.AddTransient<IRepository<Client>, Repository<Client>>();
             services.AddTransient<IRepository<Parvandeh>, Repository<Parvandeh>>();
 
+            services.AddTransient<IReceivedRepository, ReceivedRepository>();
+            services.AddTransient<IClientRepository, ClientRepository>();
+            services.AddTransient<IParvandehRepository, ParvandehRepository>();
+
             #endregion
 
             var sqlCn = Configuration.GetValue<string>("Sql_CN");
