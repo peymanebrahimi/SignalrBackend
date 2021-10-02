@@ -9,8 +9,8 @@ namespace ChatApp.Models
     {
         [PersonalData]
         public string Name { get; set; }
-        [PersonalData]
-        public DateTime DOB { get; set; }
+        //[PersonalData]
+        //public DateTime DOB { get; set; }
 
         public ICollection<ChatHistory> ChatHistories { get; set; }
     }

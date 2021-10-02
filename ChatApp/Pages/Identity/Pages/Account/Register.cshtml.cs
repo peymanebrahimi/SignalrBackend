@@ -51,10 +51,10 @@ namespace ChatApp.Areas.Identity.Pages.Account
             [Display(Name = "Full name")]
             public string Name { get; set; }
 
-            [Required]
-            [Display(Name = "Birth Date")]
-            [DataType(DataType.Date)]
-            public DateTime DOB { get; set; }
+            //[Required]
+            //[Display(Name = "Birth Date")]
+            //[DataType(DataType.Date)]
+            //public DateTime DOB { get; set; }
 
             [Required]
             [EmailAddress]
@@ -88,7 +88,7 @@ namespace ChatApp.Areas.Identity.Pages.Account
                 var user = new ApplicationUser
                 {
                     Name = Input.Name,
-                    DOB = Input.DOB,
+                    //DOB = Input.DOB,
                     UserName = Input.Email,
                     Email = Input.Email
                 };

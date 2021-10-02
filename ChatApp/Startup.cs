@@ -38,7 +38,7 @@ namespace ChatApp
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChatApp", Version = "v1" });
             });
             services.AddSignalR();
-
+            services.AddAutoMapper(typeof(Startup));
 
             #region Mongodb
 
