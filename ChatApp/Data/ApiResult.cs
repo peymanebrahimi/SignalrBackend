@@ -22,6 +22,10 @@ namespace ChatApp.Data
         public string FilterQuery { get; }
         public int TotalPages { get; }
 
+        public ApiResult()
+        {
+
+        }
         private ApiResult(List<T> data, long count, int pageIndex, int pageSize, string sortColumn,
             string sortOrder, string filterColumn, string filterQuery)
         {
