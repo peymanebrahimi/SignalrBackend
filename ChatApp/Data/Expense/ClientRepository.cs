@@ -1,5 +1,4 @@
 ﻿using ChatApp.Models.Expense;
-using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
