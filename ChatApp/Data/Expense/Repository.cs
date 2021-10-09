@@ -3,27 +3,30 @@ using MongoDB.Driver;
 
 namespace ChatApp.Data.Expense
 {
-    public class Repository<T> : IRepository<T> where T : IHaveId
+    public class Repository<T> : IRepository<T> where T : IHaveId, IHaveUserId
     {
-        public  IMongoCollection<T> Collection { get; }
+        public IMongoCollection<T> Collection { get; }
         public Repository(IMongoClient client)
         {
             var database = client.GetDatabase("Expense");
             Collection = database.GetCollection<T>(typeof(T).Name);
         }
 
-        public async Task<ApiResult<T>> GetAllAsync(int pageIndex = 0, int pageSize = 10, string sortColumn = null, string sortOrder = null,
+        public async Task<ApiResult<T>> GetAllAsync(string userId, int pageIndex = 0, int pageSize = 10,
+            string sortColumn = null, string sortOrder = null,
             string filterColumn = null, string filterQuery = null)
         {
-            var result = await ApiResult<T>.CreateAsync(Collection, pageIndex, pageSize,
+            var result = await ApiResult<T>.CreateAsync(Collection, userId, pageIndex, pageSize,
                 sortColumn, sortOrder, filterColumn, filterQuery);
 
             return result;
         }
 
-        public async Task<T> GetByIdAsync(string id)
+        public async Task<T> GetByIdAsync(string id, string userId)
         {
-            return await Collection.Find<T>(s => s.Id == id).FirstOrDefaultAsync();
+            return await Collection
+                .Find<T>(s => s.Id == id && s.UserId == userId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<T> CreateAsync(T t)

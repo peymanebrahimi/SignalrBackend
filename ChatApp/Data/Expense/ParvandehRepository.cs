@@ -13,9 +13,10 @@ namespace ChatApp.Data.Expense
         }
 
 
-       public async Task<List<Parvandeh>> Query(string query)
+        public async Task<List<Parvandeh>> Query(string query, string userId)
         {
             var result = Collection.AsQueryable<Parvandeh>()
+                .Where(x => x.UserId == userId)
                 .Where(x => x.Title.Contains(query) || x.Shomareh == query)
                 .ToList();
 

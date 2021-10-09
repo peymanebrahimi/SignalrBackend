@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp.Data
 {
-    public class ApiResult<T>
+    public class ApiResult<T>where T:IHaveUserId
     {
         public List<T> Data { get; }
         public long TotalCount { get; }
@@ -22,11 +22,7 @@ namespace ChatApp.Data
         public string FilterQuery { get; }
         public int TotalPages { get; }
 
-        public ApiResult()
-        {
-
-        }
-        private ApiResult(List<T> data, long count, int pageIndex, int pageSize, string sortColumn,
+        public ApiResult(List<T> data, long count, int pageIndex, int pageSize, string sortColumn,
             string sortOrder, string filterColumn, string filterQuery)
         {
             Data = data;
@@ -104,15 +100,17 @@ namespace ChatApp.Data
             return prop != null;
         }
 
-        public static async Task<ApiResult<T>> CreateAsync(IMongoCollection<T> source, int pageIndex,
+        public static async Task<ApiResult<T>> CreateAsync(IMongoCollection<T> source, string userId, int pageIndex,
             int pageSize, string sortColumn, string sortOrder, string filterColumn, string filterQuery)
         {
             if (string.IsNullOrEmpty(sortColumn))
             {
                 sortColumn = "id";
             }
-            var filterDefinition = FilterDefinition<T>.Empty;
 
+            var filterDefinition = FilterDefinition<T>.Empty;
+            var userFilter = Builders<T>.Filter.Eq(x => x.UserId, userId);
+            
             if (!string.IsNullOrEmpty(filterColumn) &&
                 !string.IsNullOrEmpty(filterQuery))
             {
@@ -121,7 +119,9 @@ namespace ChatApp.Data
                     new BsonRegularExpression($".*{filterQuery}.*", "i"));
             }
 
-            var count = await source.CountDocumentsAsync(filterDefinition);
+            var combineFilters = Builders<T>.Filter.And(userFilter, filterDefinition);
+
+            var count = await source.CountDocumentsAsync(combineFilters);
 
             var sort = Builders<T>.Sort.Ascending(sortColumn);
 
@@ -136,7 +136,7 @@ namespace ChatApp.Data
                 }
             }
 
-            var data = await source.Find(filterDefinition).Sort(sort)
+            var data = await source.Find(combineFilters).Sort(sort)
                 .Skip(pageIndex * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();

@@ -1,28 +1,33 @@
-﻿using ChatApp.Data.Expense;
-using ChatApp.Models.Expense;
+﻿using AutoMapper;
+using ChatApp.Data.Expense;
+using ChatApp.Models.Expense.Receive;
+using ChatApp.Services;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
-using ChatApp.Data;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace ChatApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReceivedController : ControllerBase
     {
-        private readonly IReceivedRepository _receivedRepository;
+        private readonly IMediator _mediator;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly ILogger<ReceivedController> _logger;
 
-        public ReceivedController(IReceivedRepository receivedRepository,
+        public ReceivedController(IMediator mediator,
+            IUserService userService,
             IMapper mapper, ILogger<ReceivedController> logger)
         {
-            _receivedRepository = receivedRepository;
+            _mediator = mediator;
+            _userService = userService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -34,10 +39,18 @@ namespace ChatApp.Controllers
         {
             try
             {
-                var result = await _receivedRepository.GetAllAsync(pageIndex, pageSize, sortColumn,
-                    sortOrder, filterColumn, filterQuery);
+                var userId = _userService.GetUserId(User);
 
-                //var response = _mapper.Map<ApiResult<Received>, ApiResult<ReceivedListVm>>(result);
+                var result = await _mediator.Send(new GetReceivedQuery()
+                {
+                    UserId = userId,
+                    PageSize = pageSize,
+                    PageIndex = pageIndex,
+                    SortColumn = sortColumn,
+                    SortOrder = sortOrder,
+                    FilterQuery = filterQuery,
+                    FilterColumn = filterColumn
+                });
 
                 return Ok(result);
             }
@@ -53,8 +66,13 @@ namespace ChatApp.Controllers
         [ProducesResponseType(typeof(Received), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(string id)
         {
-            var result = await _receivedRepository.GetByIdAsync(id);
-            //var response = _mapper.Map<Received, ReceivedListVm>(result);
+            var userId = _userService.GetUserId(User);
+
+            var result = await _mediator.Send(new GetReceiveByIdQuery
+            {
+                UserId = userId,
+                Id = id
+            });
             return Ok(result);
         }
 
@@ -63,8 +81,9 @@ namespace ChatApp.Controllers
         {
             try
             {
-                //var model = _mapper.Map<ReceivedListVm, Received>(received);
-                await _receivedRepository.AddNewReceived(received);
+                received.UserId = _userService.GetUserId(User);
+                var command = _mapper.Map<Received, CreateReceivedCommand>(received);
+                await _mediator.Send(command);
                 return Ok();
             }
             catch (Exception exception)
@@ -77,8 +96,14 @@ namespace ChatApp.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] Received received)
         {
-            //var model = _mapper.Map<ReceivedListVm, Received>(received);
-            await _receivedRepository.UpdateAsync(id, received);
+            if (id != received.Id)
+            {
+                return BadRequest("ids not match!");
+            }
+
+            received.UserId = _userService.GetUserId(User);
+            var command = _mapper.Map<Received, UpdateReceivedCommand>(received);
+            await _mediator.Send(command);
             return Ok();
         }
 

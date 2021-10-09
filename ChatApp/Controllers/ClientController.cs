@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ChatApp.Data.Expense;
+using ChatApp.Services;
 
 namespace ChatApp.Controllers
 {
@@ -13,10 +14,13 @@ namespace ChatApp.Controllers
     public class ClientController : ControllerBase
     {
         private readonly IClientRepository _clientRepository;
+        private readonly IUserService _userService;
 
-        public ClientController(IClientRepository clientRepository)
+        public ClientController(IClientRepository clientRepository,
+            IUserService userService)
         {
             _clientRepository = clientRepository;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -24,7 +28,8 @@ namespace ChatApp.Controllers
             string sortColumn = null, string sortOrder = null, string filterColumn = null,
             string filterQuery = null)
         {
-            var result = await _clientRepository.GetAllAsync(pageIndex, pageSize, sortColumn,
+            var userId = _userService.GetUserId(User);
+            var result = await _clientRepository.GetAllAsync(userId,pageIndex, pageSize, sortColumn,
                 sortOrder, filterColumn, filterQuery);
 
             return Ok(result);
@@ -34,7 +39,8 @@ namespace ChatApp.Controllers
         [HttpGet("{query}")]
         public async Task<IActionResult> Query(string query)
         {
-            var result = await _clientRepository.Query(query);
+            var userId = _userService.GetUserId(User);
+            var result = await _clientRepository.Query(query, userId);
 
             return Ok(result);
         }

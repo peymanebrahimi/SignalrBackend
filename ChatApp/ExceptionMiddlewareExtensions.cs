@@ -15,6 +15,7 @@ namespace ChatApp
                 errorApp.Run(async context =>
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                     context.Response.ContentType = "application/json";
                     var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (exceptionHandlerFeature != null)

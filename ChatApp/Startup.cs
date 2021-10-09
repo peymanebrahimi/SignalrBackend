@@ -3,6 +3,9 @@ using ChatApp.Data.Expense;
 using ChatApp.Hubs;
 using ChatApp.Models;
 using ChatApp.Models.Expense;
+using ChatApp.Models.Expense.Receive;
+using ChatApp.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -39,7 +42,7 @@ namespace ChatApp
             });
             services.AddSignalR();
             services.AddAutoMapper(typeof(Startup));
-
+            services.AddCors();
             #region Mongodb
 
             ConventionRegistry.Register("Camel Case",
@@ -49,15 +52,19 @@ namespace ChatApp
 
             services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongodbCn));
 
+            #endregion
+
+
             services.AddTransient<IRepository<Received>, Repository<Received>>();
             services.AddTransient<IRepository<Client>, Repository<Client>>();
             services.AddTransient<IRepository<Parvandeh>, Repository<Parvandeh>>();
+            services.AddTransient<IRepository<Cheque>, Repository<Cheque>>();
 
             services.AddTransient<IReceivedRepository, ReceivedRepository>();
             services.AddTransient<IClientRepository, ClientRepository>();
             services.AddTransient<IParvandehRepository, ParvandehRepository>();
+            services.AddTransient<IChequeRepository, ChequeRepository>();
 
-            #endregion
 
             var sqlCn = Configuration.GetValue<string>("Sql_CN");
 
@@ -92,9 +99,11 @@ namespace ChatApp
                 ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>,
                     ConfigureJwtBearerOptions>());
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddRazorPages();
 
+            services.AddScoped<IUserService, UserService>();
+            services.AddMediatR(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -106,6 +115,20 @@ namespace ChatApp
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ChatApp v1"));
             }
+            
+
+            app.ConfigureExceptionHandler();
+
+            // to chrome and edge function properly on login redirect.
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Lax
+            });
+
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
             app.UseCors(builder =>
             {
                 var clients = Configuration.GetSection("SignalrOrigins")
@@ -118,18 +141,6 @@ namespace ChatApp
                     .AllowAnyMethod()
                     .AllowCredentials();
             });
-
-            app.ConfigureExceptionHandler();
-
-            // to chrome and adge function properly on login redirect.
-            app.UseCookiePolicy(new CookiePolicyOptions
-            {
-                MinimumSameSitePolicy = SameSiteMode.Lax
-            });
-
-            app.UseStaticFiles();
-
-            app.UseRouting();
 
             app.UseIdentityServer();
             app.UseAuthentication();

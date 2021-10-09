@@ -1,6 +1,7 @@
 ﻿using ChatApp.Data.Expense;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using ChatApp.Services;
 
 namespace ChatApp.Controllers
 {
@@ -9,10 +10,13 @@ namespace ChatApp.Controllers
     public class ParvandehController : ControllerBase
     {
         private readonly IParvandehRepository _repository;
+        private readonly IUserService _userService;
 
-        public ParvandehController(IParvandehRepository repository)
+        public ParvandehController(IParvandehRepository repository,
+            IUserService userService)
         {
             _repository = repository;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -20,7 +24,8 @@ namespace ChatApp.Controllers
             string sortColumn = null, string sortOrder = null, string filterColumn = null,
             string filterQuery = null)
         {
-            var result = await _repository.GetAllAsync(pageIndex, pageSize, sortColumn,
+            var userId = _userService.GetUserId(User);
+            var result = await _repository.GetAllAsync(userId, pageIndex, pageSize, sortColumn,
                 sortOrder, filterColumn, filterQuery);
 
             return Ok(result);
@@ -30,7 +35,8 @@ namespace ChatApp.Controllers
         [HttpGet("{query}")]
         public async Task<IActionResult> Query(string query)
         {
-            var result = await _repository.Query(query);
+            var userId = _userService.GetUserId(User);
+            var result = await _repository.Query(query, userId);
 
             return Ok(result);
         }

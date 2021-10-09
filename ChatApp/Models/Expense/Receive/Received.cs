@@ -3,9 +3,9 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 
-namespace ChatApp.Models.Expense
+namespace ChatApp.Models.Expense.Receive
 {
-    public class Received : IHaveId
+    public class Received : IHaveId, IHaveUserId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

@@ -12,9 +12,10 @@ namespace ChatApp.Data.Expense
         {
         }
 
-        public async Task<List<Client>> Query(string query)
+        public async Task<List<Client>> Query(string query, string userId)
         {
             var result = Collection.AsQueryable<Client>()
+                .Where(x => x.UserId == userId)
                 .Where(x => x.Name.Contains(query) || x.NationalCode == query)
                 .ToList();
 

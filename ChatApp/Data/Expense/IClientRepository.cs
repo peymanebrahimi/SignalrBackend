@@ -6,6 +6,6 @@ namespace ChatApp.Data.Expense
 {
     public interface IClientRepository : IRepository<Client>
     {
-        Task<List<Client>> Query(string query);
+        Task<List<Client>> Query(string query, string userId);
     }
 }
