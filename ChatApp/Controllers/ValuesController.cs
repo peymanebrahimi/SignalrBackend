@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ChatApp.Controllers
 {
@@ -9,11 +10,14 @@ namespace ChatApp.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly ILogger<ValuesController> _logger;
         public IConfiguration Configuration { get; }
 
-        public ValuesController(IConfiguration configuration)
+        public ValuesController(IConfiguration configuration,
+            ILogger<ValuesController> logger)
         {
-           Configuration = configuration;
+            _logger = logger;
+            Configuration = configuration;
         }
 
         // GET: api/<ValuesController>
@@ -28,8 +32,8 @@ namespace ChatApp.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            var mongodbCn = Configuration.GetValue<string>("MONGODB_CN");
-            return mongodbCn;
+            _logger.LogInformation("requested id is {getId}", id);
+            return id.ToString();
         }
 
         // POST api/<ValuesController>

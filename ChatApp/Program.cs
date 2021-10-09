@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
+using Serilog;
+using Serilog.Events;
 
 namespace ChatApp
 {
@@ -20,27 +22,52 @@ namespace ChatApp
         {
             //CreateHostBuilder(args).Build().Run();
 
-            var host = CreateHostBuilder(args).Build();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.Seq(
+                    //Environment.GetEnvironmentVariable("SEQ_URL") ?? "http://localhost:5341"
+                    "http://chatseq"
+                    )
+                .CreateLogger();
 
-
-            RetryPolicy retryIfException =
-                Policy.Handle<Exception>()
-                    .WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(
-                    Math.Pow(2, retryAttempt)));
-
-            retryIfException.Execute(() =>
+            try
             {
-                using var scope = host.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
-            });
+                Log.Information("Starting up");
+
+                var host = CreateHostBuilder(args).Build();
 
 
-            host.Run();
+                RetryPolicy retryIfException =
+                    Policy.Handle<Exception>()
+                        .WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(
+                            Math.Pow(2, retryAttempt)));
+
+                retryIfException.Execute(() =>
+                {
+                    using var scope = host.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    db.Database.Migrate();
+                });
+
+
+                host.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application start-up failed");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

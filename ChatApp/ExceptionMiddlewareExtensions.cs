@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Serilog;
 using System.Net;
 
 namespace ChatApp
@@ -21,7 +22,7 @@ namespace ChatApp
                     if (exceptionHandlerFeature != null)
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
+                        Log.Fatal("ex in middleware {exceptionHandlerFeature.Error}", exceptionHandlerFeature.Error);
                         var text = JsonConvert.SerializeObject(new[] { exceptionHandlerFeature.Error });
                         await context.Response.WriteAsync(text);
                     }

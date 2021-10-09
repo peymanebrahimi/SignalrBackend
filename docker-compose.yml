@@ -12,6 +12,8 @@ services:
       - "8081:443"
     restart: always
     environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT="development"
       - MONGODB_CN
       - Sql_CN
     networks:
@@ -48,6 +50,20 @@ services:
     networks:
      - signalr-app-network
 
+  chatseq:
+    image: datalust/seq
+    container_name: chatseq
+    ports:
+      - "9090:80"
+      - "5040:5341"
+    volumes:
+      - "chatseqvol:/data"
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+    networks:
+      - signalr-app-network
+
 networks:
   signalr-app-network:
     driver: bridge
@@ -55,3 +71,4 @@ networks:
 volumes:
   mongovol:
   sqlvolume:
+  chatseqvol:
